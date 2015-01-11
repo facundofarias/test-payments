@@ -4,6 +4,8 @@ Helps to test common payment frameworks with testing data, such as:
 - Name, Address, Phone per location
 - Payment test data for providers: Stripe, Spreedly, BrainTree, MercadoPago, Mango, etc.
 
+Original fork of [bugmagnet](https://github.com/gojko/bugmagnet).
+
 ##Usage
 
 The easiest way to install the extension is from the [Chrome Web
