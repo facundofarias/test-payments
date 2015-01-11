@@ -1,6 +1,6 @@
 {
 	"name": "Test Payments",
-	"description": "Right-click context menu to see payments test data",
+	"description": "Right-click context menu to add payments test data",
 	"version": "0.1",
 	"permissions": ["contextMenus"],
 	"background": {
