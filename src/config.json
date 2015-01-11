@@ -14,41 +14,51 @@
 	},
 	"Credit Cards": {
 		"Stripe": {
-			"Visa": {
-				"Number": "4242424242424242",
-				"Expiration Month": "1",
-				"Expiration Year": "2016",
-				"CVV": "123"
+			"Successfull": {
+				"Visa": {
+					"Number": "4242424242424242",
+					"Expiration Month": "1",
+					"Expiration Year": "2016",
+					"CVV": "123"
+				},
+				"MasterCard": {
+					"Number": "5555555555554444",
+					"Expiration Month": "1",
+					"Expiration Year": "2016",
+					"CVV": "123"
+				},
+				"American Express": {
+					"Number": "378282246310005",
+					"Expiration Month": "1",
+					"Expiration Year": "2016",
+					"CVV": "123"
+				},
+				"Discover": {
+					"Number": "6011111111111117",
+					"Expiration Month": "1",
+					"Expiration Year": "2016",
+					"CVV": "123"
+				},
+				"Diners Club": {
+					"Number": "38520000023237",
+					"Expiration Month": "1",
+					"Expiration Year": "2016",
+					"CVV": "123"
+				},
+				"JCB": {
+					"Number": "3530111333300000",
+					"Expiration Month": "1",
+					"Expiration Year": "2016",
+					"CVV": "123"
+				}
 			},
-			"MasterCard": {
-				"Number": "5555555555554444",
-				"Expiration Month": "1",
-				"Expiration Year": "2016",
-				"CVV": "123"
-			},
-			"American Express": {
-				"Number": "378282246310005",
-				"Expiration Month": "1",
-				"Expiration Year": "2016",
-				"CVV": "123"
-			},
-			"Discover": {
-				"Number": "6011111111111117",
-				"Expiration Month": "1",
-				"Expiration Year": "2016",
-				"CVV": "123"
-			},
-			"Diners Club": {
-				"Number": "38520000023237",
-				"Expiration Month": "1",
-				"Expiration Year": "2016",
-				"CVV": "123"
-			},
-			"JCB": {
-				"Number": "3530111333300000",
-				"Expiration Month": "1",
-				"Expiration Year": "2016",
-				"CVV": "123"
+			"Unsuccessful": {
+				"card_declined": "4000000000000002",
+				"incorrect_cvc": "4000000000000127",
+				"expired_card": "4000000000000069",
+				"processing_error": "4000000000000119",
+				"incorrect_number": "4242424242424241",
+				"disputed": "4000000000000259"
 			}
 		},
 		"Spreedly": {
