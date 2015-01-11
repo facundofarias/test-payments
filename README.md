@@ -10,7 +10,7 @@ The easiest way to install the extension is from the [Chrome Web
 store](https://chrome.google.com/webstore/detail/efhedldbjahpgjcneebmbolkalbhckfi). After
 installation, just right-click on any editable item on the page and you'll see a
 Bug Magnet submenu. Click an item there, and it will be inserted into the
-editable field. 
+editable field.
 
 Alternatively, you can load the extension from the source files - see _Running
 from a local setup_ below.
@@ -44,7 +44,7 @@ You can add your own values to the right-click menu by modifying
 [config.json](src/config.json). The format is simple:
 
 * a hash object property is a sub-menu
-* a String property is a menu item. The property name is used as a menu item label 
+* a String property is a menu item. The property name is used as a menu item label
   and the value is inserted into the text field on click.
 * an Array property is a sub-menu, allowing you to quickly add a list of Strings
   without a special label (the element values are used both as menu labels and
@@ -61,9 +61,3 @@ from the command line using
 
 Load [manifest.json](src/manifest.json) from the **src** folder in Chrome as an [unpacked
 extension](https://developer.chrome.com/extensions/getstarted#unpacked).
-
-
-
-##Icon credit
-
-Magnet icon from [Woothemes Ultimate Icon Set by Nishan Sothilingam](http://iconfindr.com/1vSsaKB)

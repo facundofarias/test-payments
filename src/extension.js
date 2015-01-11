@@ -26,7 +26,7 @@
 			},
 			config, rootMenu;
 		config = JSON.parse(configText);
-		rootMenu = menuBuilder.rootMenu('Bug Magnet');
+		rootMenu = menuBuilder.rootMenu('Test Payments');
 		processMenuObject(config, rootMenu);
 	};
 	BugMagnet.ChromeMenuBuilder = function () {
