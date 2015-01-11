@@ -1,15 +1,15 @@
-#Bug Magnet
+#Test Payments
 
-Exploratory testing assistant for Chrome. Adds common problematic values and
-edge cases to the context menu (right-click) for editable elements, so you can
-keep them handy and access them easily during exploratory testing sessions.
+Helps to test common payment frameworks with testing data, such as:
+- Name, Address, Phone per location
+- Payment test data for providers: Stripe, Spreedly, BrainTree, MercadoPago, Mango, etc.
 
 ##Usage
 
 The easiest way to install the extension is from the [Chrome Web
-store](https://chrome.google.com/webstore/detail/efhedldbjahpgjcneebmbolkalbhckfi). After
-installation, just right-click on any editable item on the page and you'll see a
-Bug Magnet submenu. Click an item there, and it will be inserted into the
+store](https://chrome.google.com/webstore/detail/test-payments/lmeopbbdngpgcbdagpjgbdlkcafofpji?hl=en&gl=ES). After
+installation, just right-click on any editable item on the page and you'll see the
+Test Payments submenu. Click an item there, and it will be inserted into the
 editable field.
 
 Alternatively, you can load the extension from the source files - see _Running
@@ -25,18 +25,16 @@ from a local setup_ below.
 
 ##Questions, suggestions
 
-Twitter: [@gojkoadzic](http://twitter.com/gojkoadzic)
+Twitter: [@facundofarias](https://twitter.com/facundofarias)
 
 ##Resources for more info
 
-* [E-mail address test cases](http://blogs.msdn.com/b/testing123/archive/2009/02/05/email-address-test-cases.aspx)
-  * [Dot atoms in e-mail](http://serverfault.com/questions/395766/are-two-periods-allowed-in-the-local-part-of-an-email-address)
-  * [Interactive RFC e-mail validation](http://isemail.info/)
-* [Falsehoods Programmers Believe About Names](http://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/)
-  * [We have an employee whose last name is Null](http://stackoverflow.com/questions/4456438/how-can-i-pass-the-string-null-through-wsdl-soap-from-actionscript-3-to-a-co)
-  * [Animal rights activist changes name to GoVeg.com](http://usatoday30.usatoday.com/tech/webguide/internetlife/2003-08-01-goveg_x.htm)
-  * [Longest English surname on record](http://en.wikipedia.org/wiki/Leone_Sextus_Tollemache)
-* [Elisabeth Hendrickson's test heuristics cheat sheet](http://testobsessed.com/wp-content/uploads/2011/04/testheuristicscheatsheetv1.pdf)
+* [Stripe Test Data](https://stripe.com/docs/testing)
+* [Spreedly Test Data](https://docs.spreedly.com/reference/test-data/)
+* [BrainTree Test Data](https://www.braintreepayments.com/docs/ruby/reference/sandbox)
+* [MercadoPago Test Data](https://developers.mercadopago.com/documentation/pay-test-users)
+* [Mango Test Data](https://developers.getmango.com/es/docs/test-card-numbers/)
+
 
 ##Customising
 
@@ -61,3 +59,7 @@ from the command line using
 
 Load [manifest.json](src/manifest.json) from the **src** folder in Chrome as an [unpacked
 extension](https://developer.chrome.com/extensions/getstarted#unpacked).
+
+##Credits
+
+Special thanks to [@gojkoadzic](http://twitter.com/gojkoadzic), and his [bugmagnet](https://github.com/gojko/bugmagnet) which I used as baseline.
