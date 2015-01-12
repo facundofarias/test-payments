@@ -19,7 +19,7 @@ from a local setup_ below.
 
 ##Features
 
-* Convenient access to common boundaries and edge cases for exploratory testing
+* Convenient access to common test payment data
 * Works on input fields, text areas, content editable DIVs
 * Works on multi-frame pages, but only if they are from the same domain
 * Only works in Chrome
