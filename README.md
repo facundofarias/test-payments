@@ -19,7 +19,7 @@ from a local setup_ below.
 
 ##Features
 
-* Convenient access to common boundaries and edge cases for exploratory testing
+* Convenient access to common test payment data
 * Works on input fields, text areas, content editable DIVs
 * Works on multi-frame pages, but only if they are from the same domain
 * Only works in Chrome
@@ -32,23 +32,11 @@ Twitter: [@facundofarias](https://twitter.com/facundofarias)
 ##Resources for more info
 
 * [Stripe Test Data](https://stripe.com/docs/testing)
+* [PayPal Test Data](http://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm)
 * [Spreedly Test Data](https://docs.spreedly.com/reference/test-data/)
 * [BrainTree Test Data](https://www.braintreepayments.com/docs/ruby/reference/sandbox)
 * [MercadoPago Test Data](https://developers.mercadopago.com/documentation/pay-test-users)
 * [Mango Test Data](https://developers.getmango.com/es/docs/test-card-numbers/)
-
-
-##Customising
-
-You can add your own values to the right-click menu by modifying
-[config.json](src/config.json). The format is simple:
-
-* a hash object property is a sub-menu
-* a String property is a menu item. The property name is used as a menu item label
-  and the value is inserted into the text field on click.
-* an Array property is a sub-menu, allowing you to quickly add a list of Strings
-  without a special label (the element values are used both as menu labels and
-  as text to insert).
 
 ###Running tests
 

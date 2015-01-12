@@ -61,6 +61,32 @@
 				"disputed": "4000000000000259"
 			}
 		},
+		"PayPal": {
+			"Visa": {
+				"Number": "4111111111111111"
+			},
+			"MasterCard": {
+				"Number": "5555555555554444"
+			},
+			"American Express": {
+				"Number": "378282246310005"
+			},
+			"American Express Corporate": {
+				"Number": "378734493671000"
+			},
+			"Discover": {
+				"Number": "6011111111111117"
+			},
+			"JCB": {
+				"Number": "6011111111111117"
+			},
+			"Australian BankCard": {
+				"Number": "3530111333300000"
+			},
+			"Diners Club": {
+				"Number": "30569309025904"
+			}
+		},
 		"Spreedly": {
 			"Visa": {
 				"Number": "4111111111111111",
