@@ -33,10 +33,14 @@ Twitter: [@facundofarias](https://twitter.com/facundofarias)
 
 * [Stripe Test Data](https://stripe.com/docs/testing)
 * [PayPal Test Data](http://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm)
-* [Spreedly Test Data](https://docs.spreedly.com/reference/test-data/)
+* [Spreedly Test Data](https://docs.spreedly.com/reference/test-data)
 * [BrainTree Test Data](https://www.braintreepayments.com/docs/ruby/reference/sandbox)
 * [MercadoPago Test Data](https://developers.mercadopago.com/documentation/pay-test-users)
-* [Mango Test Data](https://developers.getmango.com/es/docs/test-card-numbers/)
+* [Mango Test Data](https://developers.getmango.com/es/docs/test-card-numbers)
+* [WorldPay Test Data](http://support.worldpay.com/support/kb/bg/testandgolive/tgl5103.html)
+* [Adyen Test Data](https://www.adyen.com/home/support/knowledgebase/implementation-articles.html?article=kb_imp_17)
+* [SagePay Test Data](http://www.sagepay.co.uk/support/12/36/test-card-details-for-your-test-transactions)
+* [Paymill Test Data](* [SagePay Test Data](http://www.sagepay.co.uk/support/12/36/test-card-details-for-your-test-transactions)
 
 ###Running tests
 
