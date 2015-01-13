@@ -300,6 +300,38 @@
 					"CVV": "123"
 				}
 			}
+		},
+		"Worldpay": {
+			"Visa": {
+				"Number": "4444333322221111"
+			},
+			"Visa Debit": {
+				"Number": "4462030000000000"
+			},
+			"Visa Electron UK": {
+				"Number": "4917300800000000"
+			},
+			"MasterCard": {
+				"Number": "5555555555554444"
+			},
+			"American Express": {
+				"Number": "34343434343434"
+			},
+			"Discover": {
+				"Number": "6011000400000000"
+			},
+			"JCB": {
+				"Number": "3528000700000000"
+			},
+			"Laser": {
+				"Number": "630495060000000000"
+			},
+			"Maestro": {
+				"Number": "6759649826438453"
+			},
+			"Diners Club": {
+				"Number": "36700102000000"
+			}
 		}
 	}
 }
