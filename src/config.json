@@ -332,6 +332,50 @@
 			"Diners Club": {
 				"Number": "36700102000000"
 			}
+		},
+		"Adyen": {
+			"Visa": {
+				"Number": "4111111111111111",
+				"Expiration Month": "08",
+				"Expiration Year": "2018",
+				"CVV": "737"
+			},
+			"MasterCard": {
+				"Number": "5555444433331111",
+				"Expiration Month": "08",
+				"Expiration Year": "2018",
+				"CVV": "737"
+			},
+			"American Express": {
+				"Number": "370000000000002",
+				"Expiration Month": "08",
+				"Expiration Year": "2018",
+				"CVV": "737"
+			},
+			"Discover": {
+				"Number": "6011601160116611",
+				"Expiration Month": "08",
+				"Expiration Year": "2018",
+				"CVV": "737"
+			},
+			"JCB": {
+				"Number": "3569990010095841",
+				"Expiration Month": "08",
+				"Expiration Year": "2018",
+				"CVV": "737"
+			},
+			"Maestro": {
+				"Number": "6731012345678906",
+				"Expiration Month": "08",
+				"Expiration Year": "2018",
+				"CVV": "737"
+			},
+			"Diners": {
+				"Number": "36006666333344",
+				"Expiration Month": "08",
+				"Expiration Year": "2018",
+				"CVV": "737"
+			}
 		}
 	}
 }
