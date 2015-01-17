@@ -405,6 +405,41 @@
 			"Diners Club": {
 				"Number": "36000000000008"
 			}
+		},
+		"PayMill": {
+			"Visa Without 3DS": {
+				"Number": "4111111111111111"
+			},
+			"Visa With 3DS": {
+				"Number": "4012888888881881"
+			},
+			"MasterCard Without 3DS": {
+				"Number": "5500000000000004"
+			},
+			"MasterCard With 3DS": {
+				"Number": "5169147129584558"
+			},
+			"American Express": {
+				"Number": "340000000000009"
+			},
+			"Discover": {
+				"Number": "6011111111111117"
+			},
+			"JCB": {
+				"Number": "3530111333300000"
+			},
+			"Diners Club": {
+				"Number": "30000000000004"
+			},
+			"Maestro UK": {
+				"Number": "6759000000000000"
+			},
+			"Carte Bleue": {
+				"Number": "4973010000000004"
+			},
+			"China UnionPay": {
+				"Number": "6240008631401148"
+			}
 		}
 	}
 }
