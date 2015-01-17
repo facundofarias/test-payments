@@ -376,6 +376,35 @@
 				"Expiration Year": "2018",
 				"CVV": "737"
 			}
+		},
+		"SagePay": {
+			"Visa": {
+				"Number": "4929000000006"
+			},
+			"Visa Corporate": {
+				"Number": "4484000000002"
+			},
+			"Visa Debit": {
+				"Number": "4462000000000003"
+			},
+			"Visa Electron": {
+				"Number": "4917300000000008"
+			},
+			"MasterCard": {
+				"Number": "5404000000000001"
+			},
+			"American Express": {
+				"Number": "374200000000004"
+			},
+			"Discover": {
+				"Number": "36000000000008"
+			},
+			"JCB": {
+				"Number": "3569990000000009"
+			},
+			"Diners Club": {
+				"Number": "36000000000008"
+			}
 		}
 	}
 }
