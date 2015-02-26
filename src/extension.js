@@ -1,8 +1,8 @@
-/* global chrome, TestPayments */
+/* global chrome, BugMagnet */
 (function () {
 	'use strict';
-	window.TestPayments = window.TestPayments || {};
-	TestPayments.processConfigText = function (configText, menuBuilder) {
+	window.BugMagnet = window.BugMagnet || {};
+	BugMagnet.processConfigText = function (configText, menuBuilder) {
 		var processMenuObject = function (configObject, parentMenu){
 				var getTitle = function (key) {
 						if (configObject instanceof Array) {
@@ -29,7 +29,7 @@
 		rootMenu = menuBuilder.rootMenu('Test Payments');
 		processMenuObject(config, rootMenu);
 	};
-	TestPayments.ChromeMenuBuilder = function () {
+	BugMagnet.ChromeMenuBuilder = function () {
 		var self = this,
 				buildContentMessage = function (menuValue){
 					if (typeof(menuValue)=== 'string') {
@@ -51,7 +51,7 @@
 	};
 	var processConfig = function () {
 			var configText = this.responseText;
-			TestPayments.processConfigText(configText, new TestPayments.ChromeMenuBuilder());
+			BugMagnet.processConfigText(configText, new BugMagnet.ChromeMenuBuilder());
 		},
 		loadConfig = function () {
 			var xhr = new XMLHttpRequest();

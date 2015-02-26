@@ -40,8 +40,7 @@ Twitter: [@facundofarias](https://twitter.com/facundofarias)
 * [WorldPay Test Data](http://support.worldpay.com/support/kb/bg/testandgolive/tgl5103.html)
 * [Adyen Test Data](https://www.adyen.com/home/support/knowledgebase/implementation-articles.html?article=kb_imp_17)
 * [SagePay Test Data](http://www.sagepay.co.uk/support/12/36/test-card-details-for-your-test-transactions)
-* [Paymill Test Data](https://developers.paymill.com/en/reference/testing)
-* [WePay Test Data](https://www.wepay.com/developer/reference/testing)
+* [Paymill Test Data](https://developers.paymill.com/en/reference/testing/)
 
 ###Running tests
 

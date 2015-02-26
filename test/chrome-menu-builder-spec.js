@@ -1,5 +1,5 @@
-/*global describe, it, expect, TestPayments, beforeEach, chrome*/
-describe('TestPayments.ChromeMenuBuilder', function () {
+/*global describe, it, expect, BugMagnet, beforeEach, chrome*/
+describe('BugMagnet.ChromeMenuBuilder', function () {
 	'use strict';
 	var underTest,
 		lastMenu = function () {
@@ -8,7 +8,7 @@ describe('TestPayments.ChromeMenuBuilder', function () {
 	beforeEach(function () {
 		chrome.contextMenus.create.calls.reset();
 		chrome.tabs.sendMessage.calls.reset();
-		underTest = new TestPayments.ChromeMenuBuilder();
+		underTest = new BugMagnet.ChromeMenuBuilder();
 	});
 	describe('rootMenu', function () {
 		it('creates a menu item without a parent', function () {
@@ -54,3 +54,4 @@ describe('TestPayments.ChromeMenuBuilder', function () {
 		});
 	});
 });
+
