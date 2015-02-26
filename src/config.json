@@ -7,10 +7,36 @@
 			"Birthday": "November 14, 1991",
 			"Occupation": "Account Collector",
 			"Website": "PoliticalCrew.com",
-			"Email": "PatrickAAdams@armyspy.com",
-			"Phone": "+1-202-555-0100",
-			"Address": "3177 Ford Street, San Jose, CA 95131"
+			"Email": "PatrickAAdams@armyspy.com"
+		},
+		"UK Name": {
+			"Sufix": "Mrs",
+			"First Name": "Naomi",
+			"Last Name": "O'Donnell",
+			"Birthday": "November 2, 1955",
+			"Occupation": "Electrical inspector",
+			"Website": "FamilyStockExchange.co.uk",
+			"Email": "NaomiODonnell@rhyta.com"
+		},
+		"AU Name": {
+			"Sufix": "Mr",
+			"First Name": "Caleb",
+			"Last Name": "Lindell",
+			"Birthday": "May 26, 1976",
+			"Occupation": "Control room operator",
+			"Website": "CampusPods.com.au",
+			"Email": "CalebLindell@jourrapide.com"
 		}
+	},
+	"Addresses": {
+		"US Address": "1978 Lindale Avenue, San Francisco, CA 94108, US",
+		"UK Address": "61 Church Road, Liverpool, Merseyside L25 6DA, UK",
+		"AU Address": "89 Nerrigundah Drive, Glen Alvie Vic 3979, AU"
+	},
+	"Phones": {
+		"US number": "+1-202-555-0100",
+		"UK number": "+44 1632 960132",
+		"AU number": "+61 1900 654 321"
 	},
 	"Credit Cards": {
 		"Stripe": {
