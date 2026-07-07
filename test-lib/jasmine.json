@@ -1,0 +1,16 @@
+{
+  "spec_dir": ".",
+  "spec_files": [
+    "test/menu-spec.js",
+    "test/chrome-menu-builder-spec.js",
+    "test/background-spec.js",
+    "test/context-menu-handler-spec.js"
+  ],
+  "helpers": [
+    "test-lib/node-bootstrap.js"
+  ],
+  "env": {
+    "random": false,
+    "stopSpecOnExpectationFailure": false
+  }
+}

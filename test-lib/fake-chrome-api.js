@@ -1,13 +1,17 @@
-/* global jasmine, window */
-(function() {
+/* global jasmine, self */
+(function () {
 	'use strict';
 	var FakeChromeApi = function () {
-		var self = this;
-		self.runtime = {};
-		self.runtime.onMessage = jasmine.createSpyObj('chrome.runtime.onMessage', ['addListener']);
-		self.contextMenus = jasmine.createSpyObj('chrome.contextMenus', ['create']);
-		self.extension = jasmine.createSpyObj('chrome.extension', ['getURL']);
-		self.tabs = jasmine.createSpyObj('chrome.tabs', ['sendMessage']);
+		var api = this;
+		api.runtime = {
+			onMessage: jasmine.createSpyObj('chrome.runtime.onMessage', ['addListener']),
+			onInstalled: jasmine.createSpyObj('chrome.runtime.onInstalled', ['addListener']),
+			onStartup: jasmine.createSpyObj('chrome.runtime.onStartup', ['addListener']),
+			getURL: jasmine.createSpy('chrome.runtime.getURL')
+		};
+		api.contextMenus = jasmine.createSpyObj('chrome.contextMenus', ['create', 'removeAll']);
+		api.contextMenus.onClicked = jasmine.createSpyObj('chrome.contextMenus.onClicked', ['addListener']);
+		api.tabs = jasmine.createSpyObj('chrome.tabs', ['sendMessage']);
 	};
-	window.chrome = new FakeChromeApi();
+	self.chrome = new FakeChromeApi();
 })();

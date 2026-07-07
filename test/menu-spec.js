@@ -5,9 +5,9 @@ describe('processConfigText', function () {
 	beforeEach(function () {
 		menuBuilder = jasmine.createSpyObj('menuBuilder', ['rootMenu', 'subMenu', 'menuItem']);
 	});
-	it('creates a root level menu titled Bug Magnet', function () {
+	it('creates a root level menu titled Test Payments', function () {
 		BugMagnet.processConfigText('{}', menuBuilder);
-		expect(menuBuilder.rootMenu).toHaveBeenCalledWith('Bug Magnet');
+		expect(menuBuilder.rootMenu).toHaveBeenCalledWith('Test Payments');
 	});
 	it('creates simple menu items out of string-value properties, in order of appearance', function () {
 		menuBuilder.rootMenu.and.returnValue('rootM');

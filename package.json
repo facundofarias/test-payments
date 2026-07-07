@@ -1,0 +1,13 @@
+{
+  "name": "test-payments",
+  "version": "0.7.0",
+  "description": "Chrome extension: right-click context menu to insert payment test data",
+  "private": true,
+  "scripts": {
+    "test": "jasmine --config=test-lib/jasmine.json"
+  },
+  "devDependencies": {
+    "jasmine": "^6.3.0",
+    "jsdom": "^29.1.1"
+  }
+}

@@ -1,17 +1,18 @@
 {
 	"name": "Test Payments",
 	"description": "Right-click context menu to add payments test data",
-	"version": "0.5",
-	"permissions": ["contextMenus"],
+	"version": "0.7",
+	"manifest_version": 3,
+	"minimum_chrome_version": "138",
+	"permissions": ["contextMenus", "aiLanguageModel"],
 	"background": {
-		"scripts": ["extension.js"]
+		"service_worker": "extension.js"
 	},
 	"content_scripts": [{
-		"matches" : ["<all_urls>"],
+		"matches": ["<all_urls>"],
 		"js": ["context-element.js"],
 		"run_at": "document_idle"
 	}],
-	"manifest_version": 2,
 	"icons": {
 		"128": "testpayments.png",
 		"16": "testpayments-16.png"
