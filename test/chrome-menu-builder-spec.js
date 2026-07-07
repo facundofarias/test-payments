@@ -3,7 +3,7 @@ describe('BugMagnet.ChromeMenuBuilder', function () {
 	'use strict';
 	var underTest,
 		lastMenu = function () {
-			return chrome.contextMenus.create.calls.argsFor(0)[0];
+			return chrome.contextMenus.create.calls.mostRecent().args[0];
 		};
 	beforeEach(function () {
 		chrome.contextMenus.create.calls.reset();
@@ -14,44 +14,47 @@ describe('BugMagnet.ChromeMenuBuilder', function () {
 		it('creates a menu item without a parent', function () {
 			underTest.rootMenu('test me');
 			expect(chrome.contextMenus.create.calls.count()).toBe(1);
-			expect(lastMenu()['contexts']).toEqual(['editable']);
-			expect(lastMenu()['title']).toBe('test me');
-			expect(lastMenu()['parentId']).toBeFalsy();
-			expect(lastMenu()['onclick']).toBeFalsy();
+			expect(lastMenu().contexts).toEqual(['editable']);
+			expect(lastMenu().title).toBe('test me');
+			expect(lastMenu().parentId).toBeFalsy();
+			/* containers carry an explicit id (MV3 requires it) that does not decode to a value */
+			expect(lastMenu().id).toBeTruthy();
+			expect(BugMagnet.valueFromMenuId(lastMenu().id)).toBe(false);
 		});
 	});
 	describe('subMenu', function () {
 		it('creates a menu item with a parent', function () {
 			underTest.subMenu('test me', 'root');
 			expect(chrome.contextMenus.create.calls.count()).toBe(1);
-			expect(lastMenu()['contexts']).toEqual(['editable']);
-			expect(lastMenu()['title']).toBe('test me');
-			expect(lastMenu()['parentId']).toBe('root');
-			expect(lastMenu()['onclick']).toBeFalsy();
+			expect(lastMenu().contexts).toEqual(['editable']);
+			expect(lastMenu().title).toBe('test me');
+			expect(lastMenu().parentId).toBe('root');
+			/* containers carry an explicit id that does not decode to a value */
+			expect(lastMenu().id).toBeTruthy();
+			expect(BugMagnet.valueFromMenuId(lastMenu().id)).toBe(false);
 		});
 	});
 	describe('menuItem', function () {
-		it('creates a clickable menu item with a parent', function () {
-			underTest.menuItem('test me', 'root', 'some value');
+		it('creates a menu item with a parent and a value-encoding id', function () {
+			var id = underTest.menuItem('test me', 'root', 'some value');
 			expect(chrome.contextMenus.create.calls.count()).toBe(1);
-			expect(lastMenu()['contexts']).toEqual(['editable']);
-			expect(lastMenu()['title']).toBe('test me');
-			expect(lastMenu()['parentId']).toBe('root');
-			expect(lastMenu()['onclick'] instanceof Function).toBeTruthy();
+			expect(lastMenu().contexts).toEqual(['editable']);
+			expect(lastMenu().title).toBe('test me');
+			expect(lastMenu().parentId).toBe('root');
+			expect(lastMenu().id).toBe(id);
 		});
-		it('connects a chrome.tabs.sendMessage call to click with a simple string', function () {
-			underTest.menuItem('test me', 'root', 'some value');
-			var onclick = lastMenu()['onclick'];
-
-			onclick({}, {id:5});
-			expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(5, {'_type': 'literal', value: 'some value'});
+		it('encodes a plain string value as a literal that can be decoded from the id', function () {
+			var id = underTest.menuItem('test me', 'root', 'some value');
+			expect(BugMagnet.valueFromMenuId(id)).toEqual({'_type': 'literal', value: 'some value'});
 		});
-		it('connects a chrome.tabs.sendMessage call to click with a hash object string', function () {
-			underTest.menuItem('test me', 'root', {'_type': 'size', value: 'some value'});
-			var onclick = lastMenu()['onclick'];
-			onclick({}, {id:5});
-			expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(5, {'_type': 'size', value: 'some value'});
+		it('encodes a hash object value verbatim into the id', function () {
+			var id = underTest.menuItem('test me', 'root', {'_type': 'size', value: 'some value'});
+			expect(BugMagnet.valueFromMenuId(id)).toEqual({'_type': 'size', value: 'some value'});
+		});
+		it('generates a unique id even for items sharing the same value', function () {
+			var first = underTest.menuItem('one', 'root', 'same'),
+				second = underTest.menuItem('two', 'root', 'same');
+			expect(first).not.toBe(second);
 		});
 	});
 });
-

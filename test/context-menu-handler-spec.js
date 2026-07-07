@@ -58,6 +58,11 @@ describe('Context menu handler', function () {
 		handler({'_type': 'literal', 'value': 'xyz'});
 		expect(insideInput.value).toBe('xyz');
 	});
+	it('sets an empty string value rather than treating it as a failure', function () {
+		input.focus();
+		handler({'_type': 'literal', 'value': ''});
+		expect(input.value).toBe('');
+	});
 	describe('size generator', function () {
 		it('sets the field content to a text of specified size by multiplying the template', function () {
 			input.focus();

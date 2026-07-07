@@ -20,6 +20,7 @@ from a local setup_ below.
 ##Features
 
 * Convenient access to common test payment data
+* Generates fresh fake names, addresses and phones on demand using Chrome's built-in on-device AI (Gemini Nano), with static fallbacks when it isn't available (see the _AI Generated_ menu; requires Chrome 138+)
 * Works on input fields, text areas, content editable DIVs
 * Works on multi-frame pages, but only if they are from the same domain
 * Only works in Chrome
@@ -31,23 +32,29 @@ Twitter: [@facundofarias](https://twitter.com/facundofarias)
 
 ##Resources for more info
 
-* [Stripe Test Data](https://stripe.com/docs/testing)
-* [PayPal Test Data](http://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm)
-* [Spreedly Test Data](https://docs.spreedly.com/reference/test-data)
-* [BrainTree Test Data](https://www.braintreepayments.com/docs/ruby/reference/sandbox)
-* [MercadoPago Test Data](https://developers.mercadopago.com/documentation/pay-test-users)
-* [Mango Test Data](https://developers.getmango.com/es/docs/test-card-numbers)
-* [WorldPay Test Data](http://support.worldpay.com/support/kb/bg/testandgolive/tgl5103.html)
-* [Adyen Test Data](https://www.adyen.com/home/support/knowledgebase/implementation-articles.html?article=kb_imp_17)
-* [SagePay Test Data](http://www.sagepay.co.uk/support/12/36/test-card-details-for-your-test-transactions)
-* [Paymill Test Data](https://developers.paymill.com/en/reference/testing/)
+* [Stripe Test Data](https://docs.stripe.com/testing)
+* [Adyen Test Data](https://docs.adyen.com/development-resources/test-cards-and-credentials/test-card-numbers)
+* [Braintree Test Data](https://developer.paypal.com/braintree/docs/reference/general/testing)
+* [Checkout.com Test Data](https://www.checkout.com/docs/developer-resources/testing/test-cards)
+* [PayPal Test Data](https://developer.paypal.com/tools/sandbox/card-testing/)
+* [Worldpay Test Data](https://docs.worldpay.com/access/products/card-payments/testing)
+* [Mollie Test Data](https://docs.mollie.com/docs/testing)
+* [Paddle Test Data](https://developer.paddle.com/concepts/payment-methods/credit-debit-card)
+* [Square Test Data](https://developer.squareup.com/docs/devtools/sandbox/payments)
+* [MercadoPago Test Data](https://www.mercadopago.com.ar/developers/en/docs/your-integrations/test/cards)
+* [Spreedly Test Data](https://developer.spreedly.com/docs/test-data)
+* [Opayo (formerly SagePay) Test Data](https://developer.elavon.com/products/en-uk/opayo/v1/test-in-sandbox)
 
 ###Running tests
 
-Install Grunt, Node and NPM (instructions are in [GruntFile.js](GruntFile.js)). Then run tests
-from the command line using
+Install [Node and npm](https://nodejs.org/en/download), then install the dev
+dependencies and run the suite from the command line:
 
-    grunt jasmine
+    npm install
+    npm test
+
+The specs run under [Jasmine](https://jasmine.github.io/) with a
+[jsdom](https://github.com/jsdom/jsdom) DOM, so no browser is required.
 
 ###Running from a local setup
 
