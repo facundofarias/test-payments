@@ -1,7 +1,8 @@
 /* global chrome, fetch */
 (function (global) {
 	'use strict';
-	var BugMagnet = global.BugMagnet = global.BugMagnet || {};
+	var BugMagnet = global.BugMagnet = global.BugMagnet || {},
+		warmingUp = false;
 
 	BugMagnet.processConfigText = function (configText, menuBuilder) {
 		var processMenuObject = function (configObject, parentMenu) {
@@ -57,11 +58,18 @@
 	BugMagnet.ChromeMenuBuilder = function () {
 		var self = this,
 			sequence = 0;
+		/* MV3 service workers require an explicit id on every context menu item.
+		   Containers get a plain "menu-N" id; leaf items encode their value after
+		   a ":" so the onClicked listener can decode it (see valueFromMenuId). */
 		self.rootMenu = function (title) {
-			return chrome.contextMenus.create({'title': title, 'contexts': ['editable']});
+			var id = 'menu-' + (sequence++);
+			chrome.contextMenus.create({'id': id, 'title': title, 'contexts': ['editable']});
+			return id;
 		};
 		self.subMenu = function (title, parentMenu) {
-			return chrome.contextMenus.create({'title': title, 'parentId': parentMenu, 'contexts': ['editable']});
+			var id = 'menu-' + (sequence++);
+			chrome.contextMenus.create({'id': id, 'title': title, 'parentId': parentMenu, 'contexts': ['editable']});
+			return id;
 		};
 		self.menuItem = function (title, parentMenu, value) {
 			/* sequence prefix guarantees a unique id even when two items share a value */
@@ -106,19 +114,36 @@
 		return text.split('\n')[0].replace(/^["']+|["']+$/g, '').trim();
 	};
 
+	/* Prompt API availability is 'available' | 'downloadable' | 'downloading' |
+	   'unavailable'. On 'downloadable' we kick off a one-time background download
+	   (guarded so repeated clicks don't spawn concurrent downloads) and fall back
+	   for the current click. */
+	BugMagnet.warmUpModel = function (model, status) {
+		if (status !== 'downloadable' || warmingUp) {
+			return;
+		}
+		warmingUp = true;
+		Promise.resolve(model.create()).then(function (session) {
+			session.destroy();
+		}).catch(function () {}).then(function () {
+			warmingUp = false;
+		});
+	};
+
+	/* The service worker can be evicted mid-request, and generation can be slow;
+	   bound it so a hung/slow model falls back instead of leaving the click with
+	   no result. Insertion is best-effort: if focus moves during generation the
+	   value lands wherever focus is at receipt time (see context-element.js). */
+	BugMagnet.GENERATE_TIMEOUT_MS = 8000;
+
 	BugMagnet.generateValue = function (prompt) {
 		var model = global.LanguageModel;
 		if (!model) {
 			return Promise.reject(new Error('Prompt API unavailable'));
 		}
-		return Promise.resolve(model.availability()).then(function (status) {
+		var generation = Promise.resolve(model.availability()).then(function (status) {
 			if (status !== 'available') {
-				if (status === 'downloadable') {
-					/* warm up the on-device model for next time without blocking this click */
-					Promise.resolve(model.create()).then(function (session) {
-						session.destroy();
-					}).catch(function () {});
-				}
+				BugMagnet.warmUpModel(model, status);
 				throw new Error('model not ready: ' + status);
 			}
 			return model.create({
@@ -135,6 +160,15 @@
 				throw error;
 			});
 		});
+		var timeout = new Promise(function (resolve, reject) {
+			var timer = setTimeout(function () {
+				reject(new Error('generation timed out'));
+			}, BugMagnet.GENERATE_TIMEOUT_MS);
+			if (timer && timer.unref) {
+				timer.unref();
+			}
+		});
+		return Promise.race([generation, timeout]);
 	};
 
 	BugMagnet.resolveMenuValue = function (value) {
@@ -159,7 +193,8 @@
 			}
 			BugMagnet.resolveMenuValue(value).then(function (resolved) {
 				if (resolved) {
-					chrome.tabs.sendMessage(tab.id, resolved);
+					/* tab may have navigated/closed or lack a content script; ignore */
+					Promise.resolve(chrome.tabs.sendMessage(tab.id, resolved)).catch(function () {});
 				}
 			});
 		});

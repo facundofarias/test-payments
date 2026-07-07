@@ -23,7 +23,7 @@ Two independent scripts communicate across the extension boundary via Chrome mes
 
 ### MV3 value-encoding (important)
 
-MV3 forbids `onclick` handlers on `contextMenus.create`, and the service worker can be evicted and restarted at any time. So `ChromeMenuBuilder.menuItem` encodes the value to insert **into the menu item's id** as `"<sequence>:<JSON>"` (the sequence prefix guarantees uniqueness even for duplicate values). `BugMagnet.valueFromMenuId` decodes it in the `onClicked` listener. This keeps click handling stateless — no in-memory map to lose on a service-worker restart. Do not reintroduce `onclick` or persistent background state.
+MV3 forbids `onclick` handlers on `contextMenus.create`, and the service worker can be evicted and restarted at any time. So `ChromeMenuBuilder.menuItem` encodes the value to insert **into the leaf item's id** as `"<sequence>:<JSON>"` (the sequence prefix guarantees uniqueness even for duplicate values). Container items (root/sub-menus) get plain `"menu-N"` ids — MV3 requires an explicit id on *every* item. `BugMagnet.valueFromMenuId` decodes the value in the `onClicked` listener (returning `false` for container ids, which have no `:`). This keeps click handling stateless — no in-memory map to lose on a service-worker restart. Do not reintroduce `onclick` or persistent background state.
 
 ### Config format (`src/config.json`)
 
@@ -43,7 +43,7 @@ Values are resolved in one of two places depending on `_type`:
   - `literal` — returns `value` verbatim (plain strings are normalised to `{_type:'literal'}` in `extension.js`).
   - `size` — repeats `template` until it reaches `size` characters (for boundary/length testing).
 - **Service worker (`extension.js`), asynchronously** — `BugMagnet.resolveMenuValue`:
-  - `llm` — generates fake identity data via Chrome's built-in Prompt API (Gemini Nano) using `value.prompt`, then sends the result to the content script as a `literal`. Requires the `aiLanguageModel` permission and `minimum_chrome_version: 138`. Every `llm` entry must include a static `fallback`, used when the model is unavailable/unsupported/not-yet-downloaded so the extension degrades gracefully. Generation is non-deterministic and on-device (offline). The Prompt API global (`LanguageModel`) is read via the IIFE's `global`, so specs inject a fake `LanguageModel` on the Node global.
+  - `llm` — generates fake identity data via Chrome's built-in Prompt API (Gemini Nano) using `value.prompt`, then sends the result to the content script as a `literal`. Requires the `aiLanguageModel` permission and `minimum_chrome_version: 138`. Every `llm` entry must include a static `fallback`, used when the model is unavailable/unsupported/not-yet-downloaded so the extension degrades gracefully. Generation is **best-effort**: it is bounded by `BugMagnet.GENERATE_TIMEOUT_MS` (falls back on timeout) and, because resolution is async, the value is inserted wherever focus is at message-receipt time. Generation is non-deterministic and on-device (offline). The Prompt API global (`LanguageModel`) is read via the IIFE's `global`, so specs inject a fake `LanguageModel` on the Node global.
 
 To add a synchronous data kind, add a generator to `generators` in `context-element.js`; for an async/service-side kind, extend `resolveMenuValue` in `extension.js`. Reference either via `_type` in `config.json`. Adding static test data requires only editing `config.json`.
 

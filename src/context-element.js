@@ -26,7 +26,8 @@
 			};
 	chrome.runtime.onMessage.addListener(function(request /*, sender, sendResponse */) {
 		var activeElement = document.activeElement, actualValue = getValue(request);
-		if (!activeElement || !actualValue) {
+		/* getValue returns false on failure; an empty string is a valid value */
+		if (!activeElement || actualValue === false) {
 			return;
 		}
 		while (activeElement.contentDocument) {

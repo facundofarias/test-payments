@@ -17,7 +17,9 @@ describe('BugMagnet.ChromeMenuBuilder', function () {
 			expect(lastMenu().contexts).toEqual(['editable']);
 			expect(lastMenu().title).toBe('test me');
 			expect(lastMenu().parentId).toBeFalsy();
-			expect(lastMenu().id).toBeFalsy();
+			/* containers carry an explicit id (MV3 requires it) that does not decode to a value */
+			expect(lastMenu().id).toBeTruthy();
+			expect(BugMagnet.valueFromMenuId(lastMenu().id)).toBe(false);
 		});
 	});
 	describe('subMenu', function () {
@@ -27,7 +29,9 @@ describe('BugMagnet.ChromeMenuBuilder', function () {
 			expect(lastMenu().contexts).toEqual(['editable']);
 			expect(lastMenu().title).toBe('test me');
 			expect(lastMenu().parentId).toBe('root');
-			expect(lastMenu().id).toBeFalsy();
+			/* containers carry an explicit id that does not decode to a value */
+			expect(lastMenu().id).toBeTruthy();
+			expect(BugMagnet.valueFromMenuId(lastMenu().id)).toBe(false);
 		});
 	});
 	describe('menuItem', function () {

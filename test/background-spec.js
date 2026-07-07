@@ -141,5 +141,36 @@ describe('Background service worker', function () {
 			var resolved = await BugMagnet.resolveMenuValue({'_type': 'llm', prompt: 'p'});
 			expect(resolved).toBeNull();
 		});
+		it('falls back to the static value when generation exceeds the timeout', async function () {
+			var originalTimeout = BugMagnet.GENERATE_TIMEOUT_MS;
+			BugMagnet.GENERATE_TIMEOUT_MS = 10;
+			global.LanguageModel = {
+				availability: function () { return Promise.resolve('available'); },
+				create: function () {
+					return Promise.resolve({
+						prompt: function () { return new Promise(function () {}); }, /* never resolves */
+						destroy: function () {}
+					});
+				}
+			};
+			var resolved = await BugMagnet.resolveMenuValue({'_type': 'llm', prompt: 'p', fallback: 'Static'});
+			BugMagnet.GENERATE_TIMEOUT_MS = originalTimeout;
+			expect(resolved).toEqual({'_type': 'literal', value: 'Static'});
+		});
+	});
+
+	describe('warmUpModel', function () {
+		it('does nothing when the model is already available', function () {
+			var model = {create: jasmine.createSpy('create')};
+			BugMagnet.warmUpModel(model, 'available');
+			expect(model.create).not.toHaveBeenCalled();
+		});
+		it('starts the background download only once for a downloadable model', async function () {
+			var model = {create: jasmine.createSpy('create').and.returnValue(Promise.resolve({destroy: function () {}}))};
+			BugMagnet.warmUpModel(model, 'downloadable');
+			BugMagnet.warmUpModel(model, 'downloadable');
+			expect(model.create.calls.count()).toBe(1);
+			await new Promise(function (resolve) { setTimeout(resolve, 0); }); /* let the guard reset */
+		});
 	});
 });
