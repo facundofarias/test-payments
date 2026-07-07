@@ -1,6 +1,6 @@
 {
 	"name": "Test Payments",
-	"description": "Right-click context menu to add payments test data",
+	"description": "Right-click to insert payment sandbox test cards (Stripe, Adyen, Braintree & more) plus AI-generated names, addresses and phones.",
 	"version": "0.7",
 	"manifest_version": 3,
 	"minimum_chrome_version": "138",
