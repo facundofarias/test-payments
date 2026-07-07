@@ -21,4 +21,3 @@ global.self = global;
 /* order matters: fake chrome first, then the source that registers against it */
 require(path.resolve(__dirname, 'fake-chrome-api.js'));
 require(path.resolve(__dirname, '..', 'src', 'extension.js'));
-require(path.resolve(__dirname, '..', 'src', 'context-element.js'));

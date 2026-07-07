@@ -1,6 +1,6 @@
 {
   "name": "test-payments",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Chrome extension: right-click context menu to insert payment test data",
   "private": true,
   "scripts": {

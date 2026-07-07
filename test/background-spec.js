@@ -1,4 +1,4 @@
-/*global describe, it, expect, BugMagnet, beforeEach, afterEach, chrome, self, jasmine, global*/
+/*global describe, it, expect, BugMagnet, beforeEach, afterEach, chrome, self, jasmine, global, spyOn, console*/
 describe('Background service worker', function () {
 	'use strict';
 
@@ -24,25 +24,69 @@ describe('Background service worker', function () {
 		var handler = function () {
 			return chrome.contextMenus.onClicked.addListener.calls.first().args[0];
 		};
+		var lastInjection = function () {
+			return chrome.scripting.executeScript.calls.mostRecent().args[0];
+		};
 		beforeEach(function () {
-			chrome.tabs.sendMessage.calls.reset();
+			chrome.scripting.executeScript.calls.reset();
+		});
+		afterEach(function () {
+			chrome.scripting.executeScript.and.stub();
+			delete global.LanguageModel;
 		});
 		it('is registered once at startup', function () {
 			expect(chrome.contextMenus.onClicked.addListener.calls.count()).toBe(1);
 			expect(handler() instanceof Function).toBeTruthy();
 		});
-		it('sends the decoded value to the clicked tab', async function () {
-			handler()({menuItemId: '3:{"_type":"literal","value":"xyz"}'}, {id: 5});
+		it('injects the resolved text into the clicked frame', async function () {
+			handler()({menuItemId: '3:{"_type":"literal","value":"xyz"}', frameId: 0}, {id: 5});
 			await flush();
-			expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(5, {'_type': 'literal', value: 'xyz'});
+			expect(chrome.scripting.executeScript).toHaveBeenCalled();
+			expect(lastInjection().target).toEqual({tabId: 5, frameIds: [0]});
+			expect(lastInjection().func).toBe(BugMagnet.insertValue);
+			expect(lastInjection().args).toEqual(['xyz']);
 		});
-		it('does nothing for an id without an encoded value', function () {
+		it('targets only the tab when no frameId is provided', async function () {
+			handler()({menuItemId: '3:{"_type":"literal","value":"z"}'}, {id: 5});
+			await flush();
+			expect(lastInjection().target).toEqual({tabId: 5});
+		});
+		it('does nothing for an id without an encoded value', async function () {
 			handler()({menuItemId: 'garbage'}, {id: 5});
-			expect(chrome.tabs.sendMessage).not.toHaveBeenCalled();
+			await flush();
+			expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
 		});
-		it('does nothing when there is no tab', function () {
+		it('does nothing when there is no tab', async function () {
 			handler()({menuItemId: '3:{"_type":"literal","value":"xyz"}'}, undefined);
-			expect(chrome.tabs.sendMessage).not.toHaveBeenCalled();
+			await flush();
+			expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
+		});
+		it('injects the generated string for an llm value', async function () {
+			global.LanguageModel = {
+				availability: function () { return Promise.resolve('available'); },
+				create: function () {
+					return Promise.resolve({
+						prompt: function () { return Promise.resolve('{"value":"Generated Name"}'); },
+						destroy: function () {}
+					});
+				}
+			};
+			handler()({menuItemId: '9:{"_type":"llm","prompt":"p","fallback":"F"}', frameId: 0}, {id: 5});
+			await flush();
+			expect(lastInjection().args).toEqual(['Generated Name']);
+		});
+		it('does not inject when the value resolves to null', async function () {
+			/* llm with no fallback and no model available -> resolveText yields null */
+			handler()({menuItemId: '9:{"_type":"llm","prompt":"p"}', frameId: 0}, {id: 5});
+			await flush();
+			expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
+		});
+		it('logs and does not throw when injection is rejected', async function () {
+			var debugSpy = spyOn(console, 'debug');
+			chrome.scripting.executeScript.and.returnValue(Promise.reject(new Error('frame gone')));
+			handler()({menuItemId: '3:{"_type":"literal","value":"xyz"}', frameId: 0}, {id: 5});
+			await flush();
+			expect(debugSpy).toHaveBeenCalled();
 		});
 	});
 
@@ -99,20 +143,39 @@ describe('Background service worker', function () {
 		});
 	});
 
-	describe('resolveMenuValue', function () {
+	describe('renderValue', function () {
+		it('returns a literal value as its string', function () {
+			expect(BugMagnet.renderValue({'_type': 'literal', value: 'x'})).toBe('x');
+		});
+		it('returns an empty literal as an empty string, not a failure', function () {
+			expect(BugMagnet.renderValue({'_type': 'literal', value: ''})).toBe('');
+		});
+		it('computes a size value by repeating the template', function () {
+			expect(BugMagnet.renderValue({'_type': 'size', size: '20', template: '1234567'})).toBe('12345671234567123456');
+		});
+		it('returns false for a size value with an empty template', function () {
+			expect(BugMagnet.renderValue({'_type': 'size', size: '5', template: ''})).toBe(false);
+		});
+		it('returns false for an unknown type', function () {
+			expect(BugMagnet.renderValue({'_type': 'nope'})).toBe(false);
+		});
+	});
+
+	describe('resolveText', function () {
 		var fakeSession;
 		afterEach(function () {
 			delete global.LanguageModel;
 		});
-		it('passes literal values straight through untouched', async function () {
-			var value = {'_type': 'literal', value: 'x'};
-			expect(await BugMagnet.resolveMenuValue(value)).toBe(value);
+		it('resolves a literal value to its string', async function () {
+			expect(await BugMagnet.resolveText({'_type': 'literal', value: 'x'})).toBe('x');
 		});
-		it('passes size values straight through untouched', async function () {
-			var value = {'_type': 'size', size: '5', template: 'ab'};
-			expect(await BugMagnet.resolveMenuValue(value)).toBe(value);
+		it('resolves a size value to the computed string', async function () {
+			expect(await BugMagnet.resolveText({'_type': 'size', size: '5', template: 'ab'})).toBe('ababa');
 		});
-		it('generates a literal from an llm value when the model is available', async function () {
+		it('returns null for a value that renders to a failure', async function () {
+			expect(await BugMagnet.resolveText({'_type': 'nope'})).toBeNull();
+		});
+		it('generates text from an llm value when the model is available', async function () {
 			fakeSession = {
 				prompt: jasmine.createSpy('prompt').and.returnValue(Promise.resolve('{"value":"Jane Fake"}')),
 				destroy: jasmine.createSpy('destroy')
@@ -121,8 +184,7 @@ describe('Background service worker', function () {
 				availability: function () { return Promise.resolve('available'); },
 				create: jasmine.createSpy('create').and.returnValue(Promise.resolve(fakeSession))
 			};
-			var resolved = await BugMagnet.resolveMenuValue({'_type': 'llm', prompt: 'p', fallback: 'F'});
-			expect(resolved).toEqual({'_type': 'literal', value: 'Jane Fake'});
+			expect(await BugMagnet.resolveText({'_type': 'llm', prompt: 'p', fallback: 'F'})).toBe('Jane Fake');
 			expect(fakeSession.destroy).toHaveBeenCalled();
 		});
 		it('falls back to the static value when the model is unavailable', async function () {
@@ -130,16 +192,13 @@ describe('Background service worker', function () {
 				availability: function () { return Promise.resolve('unavailable'); },
 				create: function () { return Promise.resolve({}); }
 			};
-			var resolved = await BugMagnet.resolveMenuValue({'_type': 'llm', prompt: 'p', fallback: 'Patrick Adams'});
-			expect(resolved).toEqual({'_type': 'literal', value: 'Patrick Adams'});
+			expect(await BugMagnet.resolveText({'_type': 'llm', prompt: 'p', fallback: 'Patrick Adams'})).toBe('Patrick Adams');
 		});
 		it('falls back to the static value when the Prompt API is absent', async function () {
-			var resolved = await BugMagnet.resolveMenuValue({'_type': 'llm', prompt: 'p', fallback: 'Naomi'});
-			expect(resolved).toEqual({'_type': 'literal', value: 'Naomi'});
+			expect(await BugMagnet.resolveText({'_type': 'llm', prompt: 'p', fallback: 'Naomi'})).toBe('Naomi');
 		});
 		it('returns null for an llm value with no fallback when generation fails', async function () {
-			var resolved = await BugMagnet.resolveMenuValue({'_type': 'llm', prompt: 'p'});
-			expect(resolved).toBeNull();
+			expect(await BugMagnet.resolveText({'_type': 'llm', prompt: 'p'})).toBeNull();
 		});
 		it('falls back to the static value when generation exceeds the timeout', async function () {
 			var originalTimeout = BugMagnet.GENERATE_TIMEOUT_MS;
@@ -153,9 +212,9 @@ describe('Background service worker', function () {
 					});
 				}
 			};
-			var resolved = await BugMagnet.resolveMenuValue({'_type': 'llm', prompt: 'p', fallback: 'Static'});
+			var resolved = await BugMagnet.resolveText({'_type': 'llm', prompt: 'p', fallback: 'Static'});
 			BugMagnet.GENERATE_TIMEOUT_MS = originalTimeout;
-			expect(resolved).toEqual({'_type': 'literal', value: 'Static'});
+			expect(resolved).toBe('Static');
 		});
 	});
 
