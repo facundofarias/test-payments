@@ -1,4 +1,4 @@
-/* global chrome, fetch, document */
+/* global chrome, fetch, document, console */
 (function (global) {
 	'use strict';
 	var BugMagnet = global.BugMagnet = global.BugMagnet || {},
@@ -241,12 +241,19 @@
 					target.frameIds = [info.frameId];
 				}
 				/* activeTab (granted by the menu click) lets us inject into the
-				   clicked frame without a persistent content script or host access */
+				   clicked frame without a persistent content script or host access.
+				   Note: activeTab does not extend to cross-origin child frames, so
+				   fields hosted in third-party iframes (e.g. Stripe/Braintree hosted
+				   card fields) can't be filled - the same same-domain-only limitation
+				   the previous content-script build had. */
 				Promise.resolve(chrome.scripting.executeScript({
 					target: target,
 					func: BugMagnet.insertValue,
 					args: [text]
-				})).catch(function () {});
+				})).catch(function (error) {
+					/* frame navigated/closed, or a restricted/cross-origin frame */
+					console.debug('Test Payments: could not insert value', error);
+				});
 			});
 		});
 		chrome.runtime.onInstalled.addListener(BugMagnet.buildMenus);

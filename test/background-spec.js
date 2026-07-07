@@ -1,4 +1,4 @@
-/*global describe, it, expect, BugMagnet, beforeEach, afterEach, chrome, self, jasmine, global*/
+/*global describe, it, expect, BugMagnet, beforeEach, afterEach, chrome, self, jasmine, global, spyOn, console*/
 describe('Background service worker', function () {
 	'use strict';
 
@@ -30,6 +30,10 @@ describe('Background service worker', function () {
 		beforeEach(function () {
 			chrome.scripting.executeScript.calls.reset();
 		});
+		afterEach(function () {
+			chrome.scripting.executeScript.and.stub();
+			delete global.LanguageModel;
+		});
 		it('is registered once at startup', function () {
 			expect(chrome.contextMenus.onClicked.addListener.calls.count()).toBe(1);
 			expect(handler() instanceof Function).toBeTruthy();
@@ -56,6 +60,33 @@ describe('Background service worker', function () {
 			handler()({menuItemId: '3:{"_type":"literal","value":"xyz"}'}, undefined);
 			await flush();
 			expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
+		});
+		it('injects the generated string for an llm value', async function () {
+			global.LanguageModel = {
+				availability: function () { return Promise.resolve('available'); },
+				create: function () {
+					return Promise.resolve({
+						prompt: function () { return Promise.resolve('{"value":"Generated Name"}'); },
+						destroy: function () {}
+					});
+				}
+			};
+			handler()({menuItemId: '9:{"_type":"llm","prompt":"p","fallback":"F"}', frameId: 0}, {id: 5});
+			await flush();
+			expect(lastInjection().args).toEqual(['Generated Name']);
+		});
+		it('does not inject when the value resolves to null', async function () {
+			/* llm with no fallback and no model available -> resolveText yields null */
+			handler()({menuItemId: '9:{"_type":"llm","prompt":"p"}', frameId: 0}, {id: 5});
+			await flush();
+			expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
+		});
+		it('logs and does not throw when injection is rejected', async function () {
+			var debugSpy = spyOn(console, 'debug');
+			chrome.scripting.executeScript.and.returnValue(Promise.reject(new Error('frame gone')));
+			handler()({menuItemId: '3:{"_type":"literal","value":"xyz"}', frameId: 0}, {id: 5});
+			await flush();
+			expect(debugSpy).toHaveBeenCalled();
 		});
 	});
 
