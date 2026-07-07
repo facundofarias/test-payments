@@ -16,10 +16,10 @@ Test Payments is a Chrome extension (Manifest V3) that adds a right-click "Test 
 
 ## Architecture
 
-Two independent scripts communicate across the extension boundary via Chrome messaging:
+The whole extension is a single background **service worker** — `src/extension.js`. There is no persistent content script and no broad host permission; the extension uses `activeTab` + `scripting`, injecting a tiny function only into the frame the user right-clicked.
 
-- **`src/extension.js`** — background **service worker** (MV3). `BugMagnet.buildMenus` runs on `chrome.runtime.onInstalled`/`onStartup`: it `removeAll`s existing menus, `fetch`es `config.json`, and `BugMagnet.processConfigText` walks the config tree to build the menu via `BugMagnet.ChromeMenuBuilder` (a thin wrapper over `chrome.contextMenus`). A single `chrome.contextMenus.onClicked` listener dispatches clicks by decoding the item's value and sending it to the active tab with `chrome.tabs.sendMessage`.
-- **`src/context-element.js`** — content script (injected on `<all_urls>`, unchanged from MV2). Listens for messages and writes the resolved value into the currently focused element (`INPUT`/`TEXTAREA` via `.value`, contenteditable `DIV` via `.innerText`). It drills through `contentDocument` to reach the active element inside same-domain iframes.
+- **Menu build:** `BugMagnet.buildMenus` runs on `chrome.runtime.onInstalled`/`onStartup`: it `removeAll`s existing menus, `fetch`es `config.json`, and `BugMagnet.processConfigText` walks the config tree to build the menu via `BugMagnet.ChromeMenuBuilder` (a thin wrapper over `chrome.contextMenus`).
+- **Click → insert:** a single `chrome.contextMenus.onClicked` listener decodes the item's value (`valueFromMenuId`), resolves it to a final string (`resolveText` — handles `literal`/`size` synchronously via `renderValue`, and `llm` asynchronously), then `chrome.scripting.executeScript`s `BugMagnet.insertValue` into the clicked tab/frame (`target.frameIds = [info.frameId]`) with the string as an arg. `insertValue` runs in the page and writes into `document.activeElement` (`INPUT`/`TEXTAREA` `.value`, contenteditable `.innerText`). It must stay self-contained (no closure refs) so `executeScript` can serialize it. Because it runs in the exact clicked frame, no cross-frame drilling is needed. The `activeTab` grant comes from the menu click itself, so no host permission is declared.
 
 ### MV3 value-encoding (important)
 
@@ -37,18 +37,16 @@ Card data is organized per provider: a **Test values** sub-menu (insertable expi
 
 ### Value generators (`_type`)
 
-Values are resolved in one of two places depending on `_type`:
+All resolution happens in the service worker (`extension.js`), producing the final string to inject:
 
-- **Content script (`context-element.js`), synchronously** — the `generators` map:
-  - `literal` — returns `value` verbatim (plain strings are normalised to `{_type:'literal'}` in `extension.js`).
-  - `size` — repeats `template` until it reaches `size` characters (for boundary/length testing).
-- **Service worker (`extension.js`), asynchronously** — `BugMagnet.resolveMenuValue`:
-  - `llm` — generates fake identity data via Chrome's built-in Prompt API (Gemini Nano) using `value.prompt`, then sends the result to the content script as a `literal`. Requires the `aiLanguageModel` permission and `minimum_chrome_version: 138`. Every `llm` entry must include a static `fallback`, used when the model is unavailable/unsupported/not-yet-downloaded so the extension degrades gracefully. Generation is **best-effort**: it is bounded by `BugMagnet.GENERATE_TIMEOUT_MS` (falls back on timeout) and, because resolution is async, the value is inserted wherever focus is at message-receipt time. Generation is non-deterministic and on-device (offline). The Prompt API global (`LanguageModel`) is read via the IIFE's `global`, so specs inject a fake `LanguageModel` on the Node global.
+- `literal` (sync, `renderValue`) — returns `value` verbatim (plain strings are normalised to `{_type:'literal'}` when encoded into the menu id).
+- `size` (sync, `renderValue`) — repeats `template` until it reaches `size` characters (for boundary/length testing); returns `false` for an empty template.
+- `llm` (async, `resolveText` → `generateValue`) — generates fake identity data via Chrome's built-in Prompt API (Gemini Nano) using `value.prompt`. Requires the `aiLanguageModel` permission and `minimum_chrome_version: 138`. Every `llm` entry must include a static `fallback`, used when the model is unavailable/unsupported/not-yet-downloaded so the extension degrades gracefully. Generation is **best-effort**: bounded by `BugMagnet.GENERATE_TIMEOUT_MS` (falls back on timeout), non-deterministic, and on-device (offline). The Prompt API global (`LanguageModel`) is read via the IIFE's `global`, so specs inject a fake `LanguageModel` on the Node global.
 
-To add a synchronous data kind, add a generator to `generators` in `context-element.js`; for an async/service-side kind, extend `resolveMenuValue` in `extension.js`. Reference either via `_type` in `config.json`. Adding static test data requires only editing `config.json`.
+`resolveText` returns the string to insert, or `null` (nothing inserted). To add a new data kind, extend `renderValue` (sync) or `resolveText` (async) in `extension.js` and reference it via `_type` in `config.json`. Adding static test data requires only editing `config.json`.
 
 ## Testing notes
 
-- `test-lib/node-bootstrap.js` (a Jasmine helper) sets up jsdom globals (`window`/`document`/`self`), then loads `test-lib/fake-chrome-api.js` and the `src/` scripts so their load-time listener registrations happen once before specs run. Order matters: fake chrome before source.
-- `test-lib/fake-chrome-api.js` is a Jasmine spy stub of the MV3 `chrome.*` surface (`runtime.onInstalled/onStartup/onMessage/getURL`, `contextMenus.create/removeAll/onClicked`, `tabs.sendMessage`).
-- `test/background-spec.js` covers the MV3 wiring (id encode/decode, `onClicked` dispatch, install/startup rebuild, `buildMenus`). `test/context-menu-handler-spec.js` exercises real DOM behavior (focus, contenteditable, iframes) — jsdom handles all of these faithfully.
+- `test-lib/node-bootstrap.js` (a Jasmine helper) sets up jsdom globals (`window`/`document`/`self`), then loads `test-lib/fake-chrome-api.js` and `src/extension.js` so its load-time listener registrations happen once before specs run. Order matters: fake chrome before source.
+- `test-lib/fake-chrome-api.js` is a Jasmine spy stub of the MV3 `chrome.*` surface (`runtime.onInstalled/onStartup/getURL`, `contextMenus.create/removeAll/onClicked`, `scripting.executeScript`).
+- `test/background-spec.js` covers the wiring (id encode/decode, `renderValue`/`resolveText`, `onClicked` → `executeScript` dispatch, install/startup rebuild, `buildMenus`, the LLM/timeout/fallback matrix). `test/insert-value-spec.js` exercises `insertValue` against a real (jsdom) DOM (focus, contenteditable, empty string) — jsdom handles these faithfully.

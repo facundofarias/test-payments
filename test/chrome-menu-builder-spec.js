@@ -7,7 +7,6 @@ describe('BugMagnet.ChromeMenuBuilder', function () {
 		};
 	beforeEach(function () {
 		chrome.contextMenus.create.calls.reset();
-		chrome.tabs.sendMessage.calls.reset();
 		underTest = new BugMagnet.ChromeMenuBuilder();
 	});
 	describe('rootMenu', function () {

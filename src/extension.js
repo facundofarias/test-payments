@@ -1,4 +1,4 @@
-/* global chrome, fetch */
+/* global chrome, fetch, document */
 (function (global) {
 	'use strict';
 	var BugMagnet = global.BugMagnet = global.BugMagnet || {},
@@ -133,7 +133,7 @@
 	/* The service worker can be evicted mid-request, and generation can be slow;
 	   bound it so a hung/slow model falls back instead of leaving the click with
 	   no result. Insertion is best-effort: if focus moves during generation the
-	   value lands wherever focus is at receipt time (see context-element.js). */
+	   value lands wherever focus is at receipt time (see insertValue). */
 	BugMagnet.GENERATE_TIMEOUT_MS = 8000;
 
 	BugMagnet.generateValue = function (prompt) {
@@ -171,31 +171,82 @@
 		return Promise.race([generation, timeout]);
 	};
 
-	BugMagnet.resolveMenuValue = function (value) {
-		if (!value || value._type !== 'llm') {
-			return Promise.resolve(value);
+	/* Synchronous generators (previously in the content script). Returns the
+	   string to insert, or false on failure. `llm` is handled in resolveText. */
+	BugMagnet.renderValue = function (value) {
+		if (typeof value === 'string') {
+			return value;
 		}
-		return BugMagnet.generateValue(value.prompt).then(function (text) {
-			return {'_type': 'literal', value: text};
-		}, function () {
-			if (Object.prototype.hasOwnProperty.call(value, 'fallback')) {
-				return {'_type': 'literal', value: value.fallback};
+		if (!value || typeof value !== 'object') {
+			return false;
+		}
+		if (value._type === 'literal') {
+			return typeof value.value === 'string' ? value.value : false;
+		}
+		if (value._type === 'size') {
+			var size = parseInt(value.size, 10),
+				out = value.template;
+			if (typeof out !== 'string' || !out || !(size > 0)) {
+				return false;
 			}
-			return null;
-		});
+			while (out.length < size) {
+				out += value.template;
+			}
+			return out.substring(0, size);
+		}
+		return false;
+	};
+
+	/* Resolves a decoded menu value to the final string to insert, or null. */
+	BugMagnet.resolveText = function (value) {
+		if (value && value._type === 'llm') {
+			return BugMagnet.generateValue(value.prompt).then(function (text) {
+				return text;
+			}, function () {
+				return Object.prototype.hasOwnProperty.call(value, 'fallback') ? value.fallback : null;
+			});
+		}
+		var rendered = BugMagnet.renderValue(value);
+		return Promise.resolve(rendered === false ? null : rendered);
+	};
+
+	/* Injected into the clicked frame via chrome.scripting.executeScript. Must be
+	   self-contained (no closure references) so it can be serialised and run in
+	   the page. Runs in the frame the user right-clicked, so document.activeElement
+	   is the target field - no cross-frame drilling needed. */
+	BugMagnet.insertValue = function (text) {
+		var element = document.activeElement;
+		if (!element || typeof text !== 'string') {
+			return;
+		}
+		if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+			element.value = text;
+		} else if (element.hasAttribute && element.hasAttribute('contenteditable')) {
+			element.innerText = text;
+		}
 	};
 
 	if (typeof chrome !== 'undefined' && chrome.contextMenus && chrome.contextMenus.onClicked) {
 		chrome.contextMenus.onClicked.addListener(function (info, tab) {
 			var value = BugMagnet.valueFromMenuId(info.menuItemId);
-			if (!value || !tab || !tab.id) {
+			if (!value || !tab || tab.id === undefined) {
 				return;
 			}
-			BugMagnet.resolveMenuValue(value).then(function (resolved) {
-				if (resolved) {
-					/* tab may have navigated/closed or lack a content script; ignore */
-					Promise.resolve(chrome.tabs.sendMessage(tab.id, resolved)).catch(function () {});
+			BugMagnet.resolveText(value).then(function (text) {
+				if (typeof text !== 'string') {
+					return;
 				}
+				var target = {tabId: tab.id};
+				if (typeof info.frameId === 'number') {
+					target.frameIds = [info.frameId];
+				}
+				/* activeTab (granted by the menu click) lets us inject into the
+				   clicked frame without a persistent content script or host access */
+				Promise.resolve(chrome.scripting.executeScript({
+					target: target,
+					func: BugMagnet.insertValue,
+					args: [text]
+				})).catch(function () {});
 			});
 		});
 		chrome.runtime.onInstalled.addListener(BugMagnet.buildMenus);

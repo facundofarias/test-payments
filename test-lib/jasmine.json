@@ -4,7 +4,7 @@
     "test/menu-spec.js",
     "test/chrome-menu-builder-spec.js",
     "test/background-spec.js",
-    "test/context-menu-handler-spec.js"
+    "test/insert-value-spec.js"
   ],
   "helpers": [
     "test-lib/node-bootstrap.js"
